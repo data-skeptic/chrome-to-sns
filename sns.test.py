@@ -4,10 +4,11 @@ import time
 import boto3
 import json
 from datetime import datetime
-from code.activity_tracker.snsService import SnsService
 from code.activity_tracker.utils import inject_terraform_vars
-
 inject_terraform_vars()
+
+from code.activity_tracker.snsService import SnsService
+
 sqs = boto3.resource('sqs', os.getenv('REGION'))
 sns = boto3.resource('sns', os.getenv('REGION'))
 

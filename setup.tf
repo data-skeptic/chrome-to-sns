@@ -1,10 +1,15 @@
-
 variable "REGION" { }
 variable "STAGE" {
     default = "dev"
  }
 variable "TOPIC_NAME" {
     default = "chrome-activity"
+}
+
+
+module "api_gateway" {
+  source = "./api_gateway"
+  #aws_region = var.REGION
 }
 
 provider "aws" {
@@ -19,12 +24,12 @@ resource "null_resource" "lambda_buildstep" {
   triggers = {
     handler      = "${base64sha256(file("code/activity_tracker/handler.py"))}"
     requirements = "${base64sha256(file("code/activity_tracker/requirements.txt"))}"
-    build        = "${base64sha256(file("code/activity_tracker/build.cmd"))}"
+    build        = "${base64sha256(file("code/activity_tracker/build.sh"))}"
     snsService   = "${base64sha256(file("code/activity_tracker/snsService.py"))}"
   }
 
   provisioner "local-exec" {
-    command = "${path.cwd}/${path.root}/code/activity_tracker/build.cmd"
+    command = "${path.cwd}/${path.root}/code/activity_tracker/build.sh"
   }
 }
 
@@ -36,7 +41,7 @@ data "archive_file" "lambda_function_with_dependencies" {
   depends_on = [null_resource.lambda_buildstep]
 }
 
-resource "aws_lambda_function" "lambda_function_with_dependencies" {
+resource "aws_lambda_function" "lambda_function" {
   function_name    = "activity-tracker-${var.STAGE}"
   handler          = "handler.lambda_handler"
   role             = aws_iam_role.lambda_function_role.arn
@@ -89,8 +94,26 @@ resource "aws_iam_policy" "policy" {
 EOF
 }
 
-# Attached IAM Role and the new created Policy
-resource "aws_iam_role_policy_attachment" "test-attach" {
+resource "aws_iam_role_policy_attachment" "test_attach" {
   role       = aws_iam_role.lambda_function_role.name
   policy_arn = aws_iam_policy.policy.arn
 }
+
+##### API Gateway & Lambda integration #####
+resource "aws_lambda_permission" "lambda_permission" {
+  statement_id  = "AllowMyAPIInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.lambda_function.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${module.api_gateway.rest_api_execution_arn}/*/*/*"
+}
+
+resource "aws_api_gateway_integration" "client-api-lambda" {
+    rest_api_id   = module.api_gateway.rest_api_id
+    resource_id   = module.api_gateway.resource_id
+    http_method   = module.api_gateway.http_method
+
+   integration_http_method = "POST"
+   type                    = "AWS_PROXY"
+   uri                     = aws_lambda_function.lambda_function.invoke_arn
+ }

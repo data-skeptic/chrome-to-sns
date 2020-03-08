@@ -7,6 +7,6 @@ def inject_terraform_vars():
     config = configparser.ConfigParser()
     config.optionxform = str
     config.read_string(config_string)
-    for it in config['DEFAULT']:
-        os.environ[it] = str(config['DEFAULT'][it]).strip('\"')
+    for (key, value) in config.items('DEFAULT'):
+        os.environ[key] = str(value).strip('\"')
         
