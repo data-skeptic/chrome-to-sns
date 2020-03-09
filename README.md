@@ -5,11 +5,14 @@ This repository (will eventually) contains the source code for a Chrome Plugin w
 Solution can be deployed with Terraform command:
 terraform apply  -var-file="setup.tfvars"
 
-Please amend variables in file "setup.tfvars" before deploying
-------
+#### Please amend variables in file "setup.tfvars" before deploying
+```
 REGION = "eu-north-1"
 STAGE = "dev" // <- idea for this var is to distinguish dpleoymends on dev/stg/prod
 TOPIC_NAME = "chrome-activity" // <- AWS SNS topic name to create
-------
+```
 
-sns.test.py is integration test which creates SQS queue, subscribes it to SNS topic, posts message to SNS and reads it from SQS. All created resources are cleared at the end.
+## Testing
+
+1. sns.test.py is integration test which creates SQS queue, subscribes it to SNS topic, posts message to SNS and reads it from SQS. All created resources are cleared at the end.
+2. curl-manual-test.txt is API Gateway deployment test doing ok/failed requests. URL should be amended to pint to your deployment before run.

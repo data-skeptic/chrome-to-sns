@@ -16,6 +16,17 @@ resource "aws_api_gateway_method" "client_post" {
     authorization = "NONE"
  }
 
+resource "aws_api_gateway_method_response" "response_200" {
+    rest_api_id = aws_api_gateway_rest_api.activity_tracker.id
+    resource_id = aws_api_gateway_resource.client.id
+    http_method = aws_api_gateway_method.client_post.http_method
+    status_code = "200"
+    response_parameters = {
+        "method.response.header.Access-Control-Allow-Origin" = true
+    }
+    depends_on = [aws_api_gateway_method.client_post]
+}
+
  resource "aws_api_gateway_method" "client_options" {
     rest_api_id   = aws_api_gateway_rest_api.activity_tracker.id
     resource_id   = aws_api_gateway_resource.client.id
@@ -39,12 +50,4 @@ resource "aws_api_gateway_method_response" "options_200" {
     depends_on = [aws_api_gateway_method.client_options]
 }
 
-#resource "aws_api_gateway_integration" "client-api-lambda" {
-#    rest_api_id   = aws_api_gateway_rest_api.activity-tracker.id
-#    resource_id   = aws_api_gateway_resource.client.id
-#    http_method   = aws_api_gateway_method.proxy.client-post
 
- #  integration_http_method = "POST"
- #  type                    = "AWS_PROXY"
- #  uri                     = aws_lambda_function.lambda_function.invoke_arn
- #}

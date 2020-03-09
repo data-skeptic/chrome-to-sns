@@ -22,20 +22,20 @@ resource "aws_sns_topic" "chrome-activity-topic" {
 
 resource "null_resource" "lambda_buildstep" {
   triggers = {
-    handler      = "${base64sha256(file("code/activity_tracker/handler.py"))}"
-    requirements = "${base64sha256(file("code/activity_tracker/requirements.txt"))}"
-    build        = "${base64sha256(file("code/activity_tracker/build.sh"))}"
-    snsService   = "${base64sha256(file("code/activity_tracker/snsService.py"))}"
+    handler      = "${base64sha256(file("../code/activity_tracker/handler.py"))}"
+    requirements = "${base64sha256(file("../code/activity_tracker/requirements.txt"))}"
+    build        = "${base64sha256(file("../code/activity_tracker/build.sh"))}"
+    snsService   = "${base64sha256(file("../code/activity_tracker/snsService.py"))}"
   }
 
   provisioner "local-exec" {
-    command = "${path.cwd}/${path.root}/code/activity_tracker/build.sh"
+    command = "${path.cwd}/${path.root}/../code/activity_tracker/build.sh"
   }
 }
 
 data "archive_file" "lambda_function_with_dependencies" {
-  source_dir  = "${path.module}/code/activity_tracker/"
-  output_path = "${path.module}/code/lambda_function_with_dependencies.zip"
+  source_dir  = "${path.module}/../code/activity_tracker/"
+  output_path = "${path.module}/../code/lambda_function_with_dependencies.zip"
   type        = "zip"
 
   depends_on = [null_resource.lambda_buildstep]
@@ -108,12 +108,36 @@ resource "aws_lambda_permission" "lambda_permission" {
   source_arn    = "${module.api_gateway.rest_api_execution_arn}/*/*/*"
 }
 
-resource "aws_api_gateway_integration" "client-api-lambda" {
+resource "aws_api_gateway_integration" "client_api_lambda" {
     rest_api_id   = module.api_gateway.rest_api_id
     resource_id   = module.api_gateway.resource_id
-    http_method   = module.api_gateway.http_method
-
-   integration_http_method = "POST"
-   type                    = "AWS_PROXY"
-   uri                     = aws_lambda_function.lambda_function.invoke_arn
+    http_method   = module.api_gateway.http_method_object.http_method
+    integration_http_method = "POST"
+    type                    = "AWS"
+    uri                     = aws_lambda_function.lambda_function.invoke_arn
+    depends_on    = [module.api_gateway.http_method_object]
  }
+
+resource "aws_api_gateway_integration_response" "response_200_integration" {
+  rest_api_id   = module.api_gateway.rest_api_id
+  resource_id   = module.api_gateway.resource_id
+  http_method   = module.api_gateway.http_method_object.http_method
+  status_code = 200
+  # Transforms the backend JSON response to XML
+  response_templates = {
+
+    "application/json" = <<EOF
+#set($inputRoot = $input.path('$'))
+    $inputRoot.body
+EOF
+  }
+
+  depends_on = [aws_api_gateway_integration.client_api_lambda]
+}
+
+resource "aws_api_gateway_deployment" "api_deployment" {
+  depends_on = [aws_api_gateway_integration.client_api_lambda, module.api_gateway.http_method_object]
+  # depends_on = [module.api_gateway.http_method_object, aws_api_gateway_integration_response.response_200_integration, aws_api_gateway_integration.client_api_lambda]
+  rest_api_id = module.api_gateway.rest_api_id
+  stage_name  = "dev"
+}
