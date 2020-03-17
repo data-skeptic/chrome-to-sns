@@ -1,9 +1,12 @@
-import os
+import os, sys, inspect
 import random
 import time
 import boto3
 import json
 from datetime import datetime
+current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parent_dir = os.path.dirname(current_dir)
+sys.path.insert(0, parent_dir) 
 from code.activity_tracker.utils import inject_terraform_vars
 inject_terraform_vars()
 
