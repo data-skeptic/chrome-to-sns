@@ -19,10 +19,9 @@ def lambda_handler(event, context):
         except:
             raise AttributeError(
                 'Input object attribute <body> is not valid JSON')
-        print('json parsed ;)')
 
         print(f'sending message: ${message}')
-        snsService.post_message_in_topic(message)
+        messageId = snsService.post_message_in_topic(message)
 
         # below is test invocation to demo dependency packages work in Lmbda
         my_ip = requests.get('http://api.ipify.org?format=json').json()
@@ -32,9 +31,10 @@ def lambda_handler(event, context):
                 'Access-Control-Allow-Origin': '*',
                 'Content-Type': 'application/json'
             },
-            'body': json.dumps({'Public_IP': my_ip['ip']})
+            'body': json.dumps({'messageId': messageId, 'publicIp': my_ip['ip']})
         }
     except Exception as err:
+        print('err in catch scope 2', err)
         return {
             'statusCode': 500,
             'body': json.dumps({
