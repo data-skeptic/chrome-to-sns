@@ -34,7 +34,6 @@ def lambda_handler(event, context):
             'body': json.dumps({'messageId': messageId, 'publicIp': my_ip['ip']})
         }
     except Exception as err:
-        print('err in catch scope 2', err)
         return {
             'statusCode': 500,
             'body': json.dumps({
