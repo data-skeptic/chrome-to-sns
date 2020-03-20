@@ -15,7 +15,10 @@ def lambda_handler(event, context):
         if not 'body' in event:
             raise AttributeError('Input object should have <body> attribute')
         try:
-            message = json.loads(event['body'])
+            if type(event['body']) is dict:
+                message = event['body']
+            else:
+                message = json.loads(event['body'])
         except:
             raise AttributeError(
                 'Input object attribute <body> is not valid JSON')

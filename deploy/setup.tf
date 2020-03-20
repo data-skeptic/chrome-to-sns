@@ -63,9 +63,10 @@ data "aws_iam_policy_document" "assume-role-policy" {
 }
 
 resource "aws_iam_role" "lambda_function_role" {
-  name               = "instance-role-${var.REGION}"
-  path               = "/system/"
-  assume_role_policy = data.aws_iam_policy_document.assume-role-policy.json
+  name                 = "instance-role-${var.REGION}"
+  path                 = "/system/"
+  assume_role_policy   = data.aws_iam_policy_document.assume-role-policy.json
+  force_detach_policies= true 
 }
 
 resource "aws_iam_policy" "policy" {
@@ -115,6 +116,12 @@ resource "aws_api_gateway_integration" "client_api_lambda" {
     integration_http_method = "POST"
     type                    = "AWS"
     uri                     = aws_lambda_function.lambda_function.invoke_arn
+    passthrough_behavior    = "NEVER"
+    request_templates = {
+      "application/json" = <<EOF
+      {  "body": $input.json('$') }
+      EOF
+    }    
     depends_on    = [module.api_gateway.http_method_object]
  }
 
