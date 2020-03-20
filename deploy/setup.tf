@@ -136,7 +136,7 @@ EOF
 }
 
 resource "aws_api_gateway_deployment" "api_deployment" {
-  depends_on = [aws_api_gateway_integration.client_api_lambda, module.api_gateway.http_method_object, module.api_gateway.http_option_method_object]
+  depends_on = [aws_api_gateway_integration.client_api_lambda, module.api_gateway.http_method_object, module.api_gateway.http_options_method_object]
   rest_api_id = module.api_gateway.rest_api_id
   stage_name  = "dev"
 }
