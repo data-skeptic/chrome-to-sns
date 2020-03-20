@@ -63,13 +63,13 @@ data "aws_iam_policy_document" "assume-role-policy" {
 }
 
 resource "aws_iam_role" "lambda_function_role" {
-  name               = "instance_role"
+  name               = "instance-role-${var.REGION}"
   path               = "/system/"
   assume_role_policy = data.aws_iam_policy_document.assume-role-policy.json
 }
 
 resource "aws_iam_policy" "policy" {
-  name = "activity-policy"
+  name = "activity-policy-${var.REGION}"
 
   policy = <<EOF
 {
@@ -136,7 +136,7 @@ EOF
 }
 
 resource "aws_api_gateway_deployment" "api_deployment" {
-  depends_on = [aws_api_gateway_integration.client_api_lambda, module.api_gateway.http_method_object]
+  depends_on = [aws_api_gateway_integration.client_api_lambda, module.api_gateway.http_method_object, module.api_gateway.http_option_method_object]
   rest_api_id = module.api_gateway.rest_api_id
   stage_name  = "dev"
 }
