@@ -5,17 +5,42 @@ sys.path.insert(0, 'package/')
 from utils import inject_terraform_vars
 inject_terraform_vars()
 
-
-import requests
 from snsService import SnsService
+import requests
 
 def lambda_handler(event, context):
+    try:
+        snsService = SnsService()
 
-    snsService = SnsService()
-    message = json.dumps(event)
-    print(f'sending message: ${message}')
-    snsService.post_message_in_topic(message)
+        if not 'body' in event:
+            raise AttributeError('Input object should have <body> attribute')
+        try:
+            if type(event['body']) is dict:
+                message = event['body']
+            else:
+                message = json.loads(event['body'])
+        except:
+            raise AttributeError(
+                'Input object attribute <body> is not valid JSON')
 
-    #below is test invocation to demo dependency packages work in Lmbda
-    my_ip = requests.get('http://api.ipify.org?format=json').json()
-    return {'Public IP': my_ip['ip']}
+        print(f'sending message: ${message}')
+        messageId = snsService.post_message_in_topic(message)
+
+        # below is test invocation to demo dependency packages work in Lmbda
+        my_ip = requests.get('http://api.ipify.org?format=json').json()
+        return {
+            'statusCode': 200,
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Content-Type': 'application/json'
+            },
+            'body': json.dumps({'messageId': messageId, 'publicIp': my_ip['ip']})
+        }
+    except Exception as err:
+        return {
+            'statusCode': 500,
+            'body': json.dumps({
+                'Scope': 'Lambda global catch',
+                'Error': str(err)
+            })
+        }

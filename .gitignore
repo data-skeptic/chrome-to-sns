@@ -2,6 +2,7 @@ __pycache__
 code/__pycache__
 code/activity_tracker/__pycache__
 code/activity_tracker/package
+code/activity_tracker/setup.tfvars
 code/lambda_function_with_dependencies.zip
 terraform.tfstate
 terraform.tfstate.backup

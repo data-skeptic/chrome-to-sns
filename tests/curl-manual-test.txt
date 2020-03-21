@@ -1,0 +1,11 @@
+#1. Response 200
+Request:
+curl --header "Content-Type: application/json" --request POST --data '{"username":"xyz","password":"xyz"}' https://zizk0614c8.execute-api.eu-north-1.amazonaws.com/dev/client
+Response:
+{"Public_IP": "13.53.170.220"}
+
+#2 Response 500
+Request:
+curl --header "Content-Type: application/json" --request POST --data '{"raiseError":true}' https://zizk0614c8.execute-api.eu-north-1.amazonaws.com/dev/client
+Response:
+{"ErrorMessage": "Lambda global catch"}
