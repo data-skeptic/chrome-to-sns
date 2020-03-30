@@ -1,0 +1,22 @@
+{
+    "update_url": "https://clients2.google.com/service/update2/crx",
+    "name": "Portal",
+    "description" : "Data Skeptic: Portal",
+    "version": "1.0",
+    "manifest_version": 2,
+    "browser_action": {
+      "default_popup": "popup.html"
+    },
+    "icons": {
+        "16": "icon16.png"
+    },
+    "commands": {
+      "_execute_browser_action": {
+        "suggested_key": {
+          "default": "Ctrl+Shift+Y",
+          "mac": "MacCtrl+Shift+Y"
+        },
+        "description": "Opens popup.html"
+      }
+    }
+}
