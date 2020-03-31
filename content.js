@@ -1,3 +1,5 @@
+// TODO: auth?
+
 const url = "https://4buo70od4m.execute-api.us-east-2.amazonaws.com/prod/webhook/chrome"
 
 const data = {"window.location.href": window.location.href}
@@ -10,3 +12,6 @@ $.ajax(url, {
         console.log('ack')
     }
 });
+
+// TODO: https://thoughtbot.com/blog/how-to-make-a-chrome-extension
+// https://developer.chrome.com/extensions/overview
